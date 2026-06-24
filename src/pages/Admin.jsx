@@ -11,7 +11,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [lastOrderId, setLastOrderId] = useState(0);
   const [newOrderAlert, setNewOrderAlert] = useState(false);
-  const API = 'http://localhost:5000/api/admin';
+  const API = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/admin' : 'http://localhost:5000/api/admin';
 
   const playSound = useCallback((type) => {
     try {
