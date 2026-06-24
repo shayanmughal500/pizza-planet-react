@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { useNavigate } from 'react-router-dom';
 
 export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const { login, register } = useAuth();
