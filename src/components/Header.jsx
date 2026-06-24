@@ -60,13 +60,13 @@ export default function Header() {
   if (isAdmin) {
     return (
       <>
-        <header className="header scrolled" id="header">
-          <div className="container header__inner">
+        <header className="header scrolled" id="header" style={{ height: 'auto', padding: '10px 0' }}>
+          <div className="container header__inner" style={{ flexWrap: 'wrap', gap: '10px', height: 'auto' }}>
             <a href="/" className="header__logo" onClick={e => { e.preventDefault(); navigate('/'); }}>
               <span className="header__logo-icon">🍕</span>
               <span>Pizza Planet <small style={{fontSize:'0.6em',color:'var(--color-text-muted)',display:'block',lineHeight:1,fontFamily:'var(--font-body)'}}>Admin Panel</small></span>
             </a>
-            <div className="header__actions">
+            <div className="header__actions" style={{ flexWrap: 'wrap' }}>
               <button className="btn btn--ghost btn--sm" onClick={handleLogout}>Logout</button>
               <button className="btn btn--outline btn--sm" onClick={() => navigate('/')}>← Site</button>
             </div>

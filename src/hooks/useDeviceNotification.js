@@ -1,86 +1,56 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-// Global AudioContext so it persists across re-renders
-let audioCtx = null;
+const BELL_SOUND_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/15/Bicycle_bell.wav';
+let globalAudio = null;
 
 export default function useDeviceNotification() {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
-    // If the browser already allowed audio without interaction (like on desktop)
-    if (audioCtx && audioCtx.state === 'running') {
-      setAudioEnabled(true);
+    if (!globalAudio) {
+      globalAudio = new Audio(BELL_SOUND_URL);
+      globalAudio.preload = 'auto';
     }
   }, []);
 
-  const enableAudio = useCallback(async () => {
+  const enableAudio = useCallback(() => {
     try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!globalAudio) {
+        globalAudio = new Audio(BELL_SOUND_URL);
       }
-      if (audioCtx.state === 'suspended') {
-        await audioCtx.resume();
-      }
-      
-      // Play a silent 1ms sound to fully unlock the audio engine on iOS
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      gain.gain.value = 0;
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.01);
-
-      setAudioEnabled(true);
+      // Play and immediately pause to unlock the audio element on iOS
+      globalAudio.volume = 0;
+      globalAudio.play().then(() => {
+        globalAudio.pause();
+        globalAudio.currentTime = 0;
+        globalAudio.volume = 1;
+        setAudioEnabled(true);
+      }).catch(e => console.error('Audio unlock failed:', e));
     } catch (e) {
       console.error('Audio enable failed', e);
     }
   }, []);
 
   const notify = useCallback((title, options = {}) => {
-    // 1. Play the crisp HTML5 audio ding!
-    if (audioCtx && audioCtx.state === 'running') {
+    // 1. Play the HTML5 audio
+    if (globalAudio && audioEnabled) {
       try {
-        const t = audioCtx.currentTime;
-        
-        // Main bell body
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1046.50, t); // C6 note
-        
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.8, t + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.8);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.8);
-
-        // Subtle harmony for premium sound
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1318.51, t); // E6 note
-        
-        gain2.gain.setValueAtTime(0, t);
-        gain2.gain.linearRampToValueAtTime(0.4, t + 0.02);
-        gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-        
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(t);
-        osc2.stop(t + 0.6);
-      } catch (e) {}
+        globalAudio.currentTime = 0;
+        globalAudio.volume = 1;
+        globalAudio.play().catch(e => console.error('Play failed:', e));
+      } catch (e) {
+        console.error('Audio play error:', e);
+      }
     }
 
-    // 2. Also try OS notifications if permitted (fallback for desktop users)
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { icon: '/favicon.ico', ...options });
-    }
-  }, []);
+    // 2. Also try OS notifications if permitted
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { icon: '/favicon.ico', ...options });
+      }
+    } catch (e) {}
+  }, [audioEnabled]);
 
   return { audioEnabled, enableAudio, notify };
 }

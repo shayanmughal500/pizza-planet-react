@@ -81,13 +81,14 @@ export default function Checkout() {
       const data = await res.json();
       if (data.success) {
         success(`Order #${data.data.orderNumber} placed! 🎉`);
-        notify('Order Placed! 🍕', { body: `Your order #${data.data.orderNumber} was successfully placed!` });
+        try { notify('Order Placed! 🍕', { body: `Your order #${data.data.orderNumber} was successfully placed!` }); } catch (e) { console.error(e); }
         clearCart();
         navigate('/order/' + data.data.orderNumber);
       } else {
         error(data.message || 'Order failed');
       }
     } catch (err) {
+      console.error('Checkout error:', err);
       error('Could not connect to server');
     }
     setSubmitting(false);

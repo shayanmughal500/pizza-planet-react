@@ -62,17 +62,38 @@ export default function Menu() {
           {(searchQuery || activeCategory !== 'all') ? ' found' : ''}
         </p>
 
-        <div className="menu__grid stagger" id="menuGrid">
-          {filteredItems.length === 0 ? (
+        {filteredItems.length === 0 ? (
+          <div className="menu__grid stagger" id="menuGrid">
             <div className="menu-empty">
               <div className="menu-empty__icon">🔍</div>
               <p className="menu-empty__text">No items found.</p>
               <p style={{ fontSize: 'var(--fs-small)', color: 'var(--color-text-muted)' }}>Try a different search or category.</p>
             </div>
+          </div>
+        ) : (
+          (activeCategory === 'all' && !searchQuery) ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {MENU_CATEGORIES.filter(cat => cat.id !== 'all').map(cat => {
+                const catItems = filteredItems.filter(it => it.category === cat.id);
+                if (catItems.length === 0) return null;
+                return (
+                  <div key={cat.id} className="menu-category-group">
+                    <h3 style={{ fontSize: '1.5rem', marginBottom: '1.25rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span>{cat.emoji}</span> {cat.label}
+                    </h3>
+                    <div className="menu__grid stagger">
+                      {catItems.map((item, i) => <MenuCard key={item.id} item={item} index={i} />)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
-            filteredItems.map((item, i) => <MenuCard key={item.id} item={item} index={i} />)
-          )}
-        </div>
+            <div className="menu__grid stagger" id="menuGrid">
+              {filteredItems.map((item, i) => <MenuCard key={item.id} item={item} index={i} />)}
+            </div>
+          )
+        )}
       </div>
     </section>
   );
