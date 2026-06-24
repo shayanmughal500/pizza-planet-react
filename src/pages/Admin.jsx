@@ -14,12 +14,7 @@ export default function Admin() {
   const [newOrderAlert, setNewOrderAlert] = useState(false);
   const API = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/admin' : 'http://localhost:5000/api/admin';
 
-  const { notify, requestPermission } = useDeviceNotification();
-
-  // Request permission on mount
-  useEffect(() => {
-    requestPermission();
-  }, [requestPermission]);
+  const { audioEnabled, enableAudio, notify } = useDeviceNotification();
 
   const playSound = useCallback((type) => {
     if (type === 'new-order') {
@@ -64,7 +59,7 @@ export default function Admin() {
         setOrders(data.data);
       }
     } catch (e) {}
-    setLoading(false);
+    if (!silent) setLoading(false);
   }
 
   useEffect(() => { fetchOrders(); }, [statusFilter]);
@@ -104,12 +99,17 @@ export default function Admin() {
   return (
     <div style={{ padding: '20px var(--content-pad) 60px', minHeight: '100vh', background: 'var(--color-bg)' }}>
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1>🍕 Admin Panel</h1>
             <p style={{ color: 'var(--color-text-dim)' }}>Pizza Planet — Order Management</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {!audioEnabled && (
+              <button className="btn btn--outline btn--sm" onClick={enableAudio} style={{ borderColor: 'var(--color-warning)', color: 'var(--color-warning)' }}>
+                🔊 Enable Audio Alerts
+              </button>
+            )}
             {newOrderAlert && (
               <span className="badge badge--popular" style={{ padding: '0.5rem 1rem', fontSize: 'var(--fs-small)' }}>🔔 New Order!</span>
             )}

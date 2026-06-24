@@ -10,11 +10,7 @@ export default function OrderTracking() {
   const [error, setError] = useState(null);
   const prevStatus = useRef(null);
   
-  const { notify, requestPermission } = useDeviceNotification();
-
-  useEffect(() => {
-    requestPermission();
-  }, [requestPermission]);
+  const { audioEnabled, enableAudio, notify } = useDeviceNotification();
 
   useEffect(() => {
     let intervalId;
@@ -104,6 +100,12 @@ export default function OrderTracking() {
             {order.status.replace(/_/g, ' ')}
           </div>
           
+          {!audioEnabled && (
+            <button className="btn btn--outline btn--block" onClick={enableAudio} style={{ borderColor: 'var(--color-warning)', color: 'var(--color-warning)', marginBottom: '1.5rem' }}>
+              🔊 Enable Audio Alerts for Updates
+            </button>
+          )}
+
           <p style={{color:'var(--color-text-dim)',marginBottom:'2rem'}}>
             We are tracking your order. Keep this page open to receive live updates and notifications!
           </p>
