@@ -4,12 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import AuthModal from '../components/auth/AuthModal';
 import { useNavigate } from 'react-router-dom';
+import useDeviceNotification from '../hooks/useDeviceNotification';
 
 export default function Checkout() {
   const { items, total, deliveryFee, clearCart } = useCart();
   const { user, token, addAddress } = useAuth();
   const { success, error } = useToast();
   const navigate = useNavigate();
+  const { notify } = useDeviceNotification();
 
   const [showAuth, setShowAuth] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -79,8 +81,9 @@ export default function Checkout() {
       const data = await res.json();
       if (data.success) {
         success(`Order #${data.data.orderNumber} placed! 🎉`);
+        notify('Order Placed! 🍕', { body: `Your order #${data.data.orderNumber} was successfully placed!` });
         clearCart();
-        navigate('/');
+        navigate('/order/' + data.data.orderNumber);
       } else {
         error(data.message || 'Order failed');
       }
@@ -109,7 +112,7 @@ export default function Checkout() {
         <h1 style={{marginBottom:'0.25rem'}}>Checkout</h1>
         <p style={{color:'var(--color-text-dim)',marginBottom:'2rem'}}>Review your order and place it</p>
 
-        <div style={{display:'grid',gridTemplateColumns:'1.3fr 1fr',gap:'2rem',alignItems:'start'}}>
+        <div className="checkout-grid">
           {/* LEFT — Delivery Info */}
           <div>
             {/* Auth prompt for guests */}

@@ -17,6 +17,7 @@ import CartDrawer from './components/CartDrawer';
 import ToastContainer from './components/ToastContainer';
 import BackToTop from './components/BackToTop';
 import Checkout from './pages/Checkout';
+import OrderTracking from './pages/OrderTracking';
 import Admin from './pages/Admin';
 
 function HomePage() {
@@ -45,6 +46,7 @@ function CustomerLayout() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order/:id" element={<OrderTracking />} />
       </Routes>
     </>
   );

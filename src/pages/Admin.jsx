@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useDeviceNotification from '../hooks/useDeviceNotification';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -13,27 +14,20 @@ export default function Admin() {
   const [newOrderAlert, setNewOrderAlert] = useState(false);
   const API = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/admin' : 'http://localhost:5000/api/admin';
 
+  const { notify, requestPermission } = useDeviceNotification();
+
+  // Request permission on mount
+  useEffect(() => {
+    requestPermission();
+  }, [requestPermission]);
+
   const playSound = useCallback((type) => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      gain.gain.value = 0.15;
-      if (type === 'new-order') {
-        osc.frequency.value = 880; osc.type = 'sine';
-        osc.start(); osc.stop(ctx.currentTime + 0.15);
-        setTimeout(() => {
-          const o2 = ctx.createOscillator(); o2.connect(gain);
-          o2.frequency.value = 1100; o2.type = 'sine';
-          o2.start(); o2.stop(ctx.currentTime + 0.2);
-        }, 180);
-      } else if (type === 'status') {
-        osc.frequency.value = 660; osc.type = 'triangle';
-        osc.start(); osc.stop(ctx.currentTime + 0.3);
-      }
-    } catch(e) {}
-  }, []);
+    if (type === 'new-order') {
+      notify('New Order Received! 🍕', { body: 'A new order just arrived in the dashboard.' });
+    } else if (type === 'status') {
+      notify('Order Status Updated', { body: 'The order status was updated successfully.' });
+    }
+  }, [notify]);
 
   useEffect(() => {
     if (!token || user?.role !== 'admin') { navigate('/'); return; }

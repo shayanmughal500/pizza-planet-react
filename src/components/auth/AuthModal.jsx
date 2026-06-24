@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const { login, register } = useAuth();
   const { success, error } = useToast();
+  const navigate = useNavigate();
   const [mode, setMode] = useState(initialMode);
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,9 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
     if (result.success) {
       success(mode === 'login' ? 'Logged in! Welcome back 🍕' : 'Account created! Welcome 🎉');
       onClose();
+      if (result.data?.user?.role === 'admin') {
+        navigate('/admin');
+      }
     } else {
       error(result.message || 'Something went wrong');
     }
